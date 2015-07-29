@@ -1,0 +1,41 @@
+{
+    "parser": "babel-eslint",
+    "env": {
+        "browser": true,
+        "node": true
+    },
+    "ecmaFeatures": {
+        "jsx": true
+    },
+    "plugins": [
+        // "eslint-plugin-react"
+    ],
+    "globals": {
+        "require": false,
+        "exports": true,
+        "module": true
+    },
+    "rules": {
+        "radix": 2,
+        "strict": [2, "global"],
+        "indent": [2, 4],
+        "no-use-before-define": [2, "nofunc"],
+        "block-scoped-var": 1,
+        "dot-location": [1, "property"],
+        "guard-for-in": 1,
+
+        "one-var": [1, "never"],
+        "comma-style": [1, "last"],
+        "quotes": [1, "double", "avoid-escape"],
+        "camelcase": [1, {"properties": "never"}],
+        "key-spacing": [1, {"beforeColon": false, "afterColon": true}],
+        "semi-spacing": [1, {"before": false, "after": true}],
+        "space-after-keywords": [1, "always"],
+        "space-before-blocks": [1, "always"],
+
+        "vars-on-top": 0,
+        "global-strict": 0,
+        "no-unused-expressions": 0,
+        "no-underscore-dangle": 0
+    }
+}
