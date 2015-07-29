@@ -9,7 +9,8 @@ var gitInfo = require("./lib/git.js");
 var jsTask = require("./lib/js.js");
 var scssTask = require("./lib/scss.js");
 var htmlTask = require("./lib/html.js");
-// var staticTask = require("./lib/static.js");
+var imageTask = require("./lib/image.js");
+var staticTask = require("./lib/static.js");
 
 module.exports = function bob(gulp, options) {
     options = assign({
@@ -17,8 +18,9 @@ module.exports = function bob(gulp, options) {
         modules: false,
         js: [],
         scss: [],
-        props: {},
-        root: (module.parent.id || __dirname).replace("gulpfile.js", "")
+        images: [],
+        statics: [],
+        root: module.parent.id.replace("gulpfile.js", "")
     }, options);
 
     // Program arguments
@@ -27,13 +29,11 @@ module.exports = function bob(gulp, options) {
         .usage("[task] [options]")
         .option("-e, --env [enviroment]", "Build enviroment (development,production) [development]", "development")
         .option("-m, --minify", "Build minified/uglified")
-        .option("-d, --debug", "Build in debug mode")
         .parse(process.argv);
 
-
     // Some auto values in props
+    options.props = {};
     options.minify = program.minify;
-    options.debug = program.debug;
     options.props.GIT = gitInfo(options.root);
     options.props.ENV = program.env;
 
@@ -47,11 +47,11 @@ module.exports = function bob(gulp, options) {
             buildDir: options.buildDir,
             external: options.modules,
             props: options.props,
-            entries: file,
+            src: file,
             root: options.root,
             filename: file.split("/").pop()
         };
-        gulp.task("build-" + filename.replace(/\./g, "-"), jsTask(jsOptions));
+        gulp.task("build-" + filename.replace(/\./g, "-"), jsTask(gulp, jsOptions));
     });
 
     // Create js build tasks (watchers)
@@ -64,11 +64,11 @@ module.exports = function bob(gulp, options) {
             buildDir: options.buildDir,
             external: options.modules,
             props: options.props,
-            entries: file,
+            src: file,
             root: options.root,
             filename: file.split("/").pop()
         };
-        gulp.task("build-watch-" + filename.replace(/\./g, "-"), jsTask(jsOptions));
+        gulp.task("build-watch-" + filename.replace(/\./g, "-"), jsTask(gulp, jsOptions));
     });
 
     // Libs task
@@ -80,57 +80,73 @@ module.exports = function bob(gulp, options) {
         filename: "libs.js",
         root: options.root
     };
-    gulp.task("build-libs", jsTask(libsOptions));
+    gulp.task("build-libs", jsTask(gulp, libsOptions));
 
     // SCSS tasks
     options.scss.forEach(function(file) {
         var filename = file.split("/").pop();
         var cssOptions = {
             watch: options.watch,
-            debug: options.debug,
             minify: options.minify,
             buildDir: options.buildDir,
             src: file
         };
-        gulp.task("build-" + filename.replace(/\./g, "-"), scssTask(cssOptions));
+        gulp.task("build-" + filename.replace(/\./g, "-"), scssTask(gulp, cssOptions));
     });
 
     // INDEX.HTML
-    gulp.task("build-html", htmlTask({props: options.props, buildDir: options.buildDir}));
+    var htmlOptions = {
+        props: options.props,
+        buildDir: options.buildDir
+    };
+    gulp.task("build-html", htmlTask(gulp, htmlOptions));
 
-    // STATIC FILES
-    // TODO: Make staticTask method
-    gulp.task("copy-static", function(cb) {
-        // gulp.src(["./node_modules/font-awesome/fonts/*"])
-        //    .pipe(gulp.dest(options.buildDir + "fonts"));
-        gulp.src(["./app/images/**/*"])
-            .pipe(gulp.dest(options.buildDir + "images"));
-        cb();
+    // IMAGES
+    options.images.forEach(function(s) {
+        var imagesOptions = {
+            src: s.src,
+            dest: s.dest,
+            buildDir: options.buildDir
+        };
+        gulp.task("build-images-" + s.dest.split("/").join("-"), imageTask(gulp, imagesOptions));
     });
 
-    // clean
+    // STATIC FILES
+    options.statics.forEach(function(s) {
+        var staticOptions = {
+            src: s.src,
+            dest: s.dest,
+            buildDir: options.buildDir
+        };
+        gulp.task("build-static-" + s.dest.split("/").join("-"), staticTask(gulp, staticOptions));
+    });
+
+    // CLEAN BUILD DIR
     gulp.task("build-clean", function(cb) {
         return del([options.buildDir], cb);
     });
 
     // BUILD ALL
-    var tasks = ["copy-static", "build-html", "build-libs"]
+    var tasks = ["build-html", "build-libs"]
+        .concat(options.statics.map(function(s) {return "build-static-" + s.dest.split("/").join("-"); }))
+        .concat(options.images.map(function(s) {return "build-images-" + s.dest.split("/").join("-"); }))
         .concat(options.js.map(function(file) {return "build-" + file.split("/").pop().replace(/\./g, "-"); }))
         .concat(options.scss.map(function(file) {return "build-" + file.split("/").pop().replace(/\./g, "-"); }));
-
     gulp.task("build", function(cb) {
         runSequence.use(gulp)("build-clean", tasks, cb);
     });
 
-    // BUILD ALL AND SERVE AND WATCH
-    var watchTasks = ["copy-static", "build-html", "build-libs"]
+    // BUILD ALL (WATCH MODE)
+    var watchTasks = ["build-html", "build-libs"]
+        .concat(options.statics.map(function(s) {return "build-static-" + s.dest.split("/").join("-"); }))
+        .concat(options.images.map(function(s) {return "build-images-" + s.dest.split("/").join("-"); }))
         .concat(options.js.map(function(file) {return "build-watch-" + file.split("/").pop().replace(/\./g, "-"); }))
         .concat(options.scss.map(function(file) {return "build-" + file.split("/").pop().replace(/\./g, "-"); }));
-
     gulp.task("build-serve", function(cb) {
         runSequence.use(gulp)("build-clean", watchTasks, cb);
     });
 
+    // BUILD ALL AND SERVE AND WATCH
     gulp.task("serve", ["build-serve"], function() {
         browserSync({
             open: false,
