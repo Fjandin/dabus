@@ -1,7 +1,7 @@
 {
   "name": "dabus",
-  "version": "0.0.5",
-  "description": "Dabus is a builder for gulp",
+  "version": "0.0.6",
+  "description": "An automated gulp builder that uses browserify, babelify, watchify, sass etc...",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

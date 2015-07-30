@@ -1,4 +1,6 @@
-# Dabus the gulp builder
+# Dabus the gulp builder #
+
+An automated gulp builder that uses browserify, babelify, watchify, sass etc...
 
 Explore `example_project` to see dabus in action.
 
