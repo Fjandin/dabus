@@ -10,7 +10,7 @@
     "gulp",
     "build"
   ],
-  "repository": "none",
+  "repository": "git@github.com:Fjandin/dabus.git",
   "readme": "README.md",
   "author": "René Bischoff <rene.bischoff@gmail.com>",
   "license": "MIT",

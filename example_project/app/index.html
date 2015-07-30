@@ -1,0 +1,34 @@
+<!DOCTYPE>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Dabus example project</title>
+    <meta name="description" content="Dabus example project">
+    <meta name="author" content="René Bischoff - rene.bischoff@gmail.com">
+    <link rel="stylesheet" href="/styles/app.css?_=##GIT_REV##">
+</head>
+<body>
+    <h1>DABUS PROJECT EXAMPLE</h1>
+    <h2>REPLACE IN BUILD (these also work in js(x) and (s)css files)</h2>
+    <div>Timestamp: ##TIMESTAMP##</div>
+    <div>Random: ##RANDOM##</div>
+    <div>Git branch: ##GIT_BRANCH##</div>
+    <div>Git rev: ##GIT_REV##</div>
+    <hr />
+    <h2>IFELSE BASED ON ENVIRONMENT IN BUILD</h2>
+    <!-- @if ENV="development,production" -->
+    <div>Development or production</div>
+    <!-- @endif -->
+    <!-- @if ENV="development" -->
+    <div>Development</div>
+    <!-- @endif -->
+    <!-- @if ENV="production" -->
+    <div>Production</div>
+    <!-- @endif -->
+    <hr />
+    <h2>THE APP</h2>
+    <div id="app"></div>
+    <script src="/scripts/modules.js?_=##GIT_REV##"></script>
+    <script src="/scripts/app.js?_=##GIT_REV##"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "dabus-example-project",
+  "version": "1.0.0",
+  "description": "An example project using dabus build",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cd node_modules; rm -f dabus; ln -s ../../ dabus; cd dabus; npm install"
+  },
+  "repository": "NA",
+  "readme": "NA",
+  "keywords": [
+    "dabus",
+    "gulp",
+    "example"
+  ],
+  "author": "René Bischoff <rene.bischoff@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "font-awesome": "^4.4.0",
+    "react": "^0.13.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0"
+  }
+}
