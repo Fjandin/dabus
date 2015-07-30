@@ -14,7 +14,7 @@ var htmlTask = require("./lib/html.js");
 var imageTask = require("./lib/image.js");
 var staticTask = require("./lib/static.js");
 
-module.exports = function bob(gulp, options) {
+module.exports = function dabus(gulp, options) {
     options = assign({
         buildDir: "./build/",
         scriptsDir: "./app/scripts/",
@@ -34,13 +34,15 @@ module.exports = function bob(gulp, options) {
         .version("0.0.3")
         .usage("[task] [options]")
         .option("-e, --env [enviroment]", "Build enviroment (development,production) [development]", "development")
-        .option("-m, --minify", "Build minified/uglified")
+        .option("-m, --minify (0/1) [minify]", "Build minified css and minified/uglified js", parseInt, 0)
+        .option("-s --sourcemaps (0/1) [sourcemaps]", "Build with sourcemaps (js and css)", parseInt, 1)
         .parse(process.argv);
 
     // Some auto values in props
     options.root = module.parent.id.replace("gulpfile.js", "");
     options.props = {};
-    options.minify = program.minify;
+    options.minify = !!program.minify;
+    options.sourcemaps = !!program.sourcemaps;
     options.props.GIT = gitInfo(options.root);
     options.props.ENV = program.env;
 
@@ -51,6 +53,7 @@ module.exports = function bob(gulp, options) {
             watch: false,
             babelify: options.babelify,
             minify: options.minify,
+            sourcemaps: options.sourcemaps,
             buildDir: options.buildDir,
             scriptsDir: options.scriptsDir,
             external: options.modules,
@@ -68,6 +71,7 @@ module.exports = function bob(gulp, options) {
             watch: true,
             babelify: options.babelify,
             minify: options.minify,
+            sourcemaps: options.sourcemaps,
             buildDir: options.buildDir,
             scriptsDir: options.scriptsDir,
             external: options.modules,
@@ -83,6 +87,7 @@ module.exports = function bob(gulp, options) {
     var libsOptions = {
         watch: false,
         minify: options.minify,
+        sourcemaps: options.sourcemaps,
         buildDir: options.buildDir,
         scriptsDir: options.scriptsDir,
         require: options.modules,
@@ -97,6 +102,7 @@ module.exports = function bob(gulp, options) {
         var cssOptions = {
             watch: options.watch,
             minify: options.minify,
+            sourcemaps: options.sourcemaps,
             buildDir: options.buildDir,
             file: file
         };
