@@ -1,6 +1,6 @@
 {
   "name": "dabus",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Dabus is a builder for gulp",
   "main": "index.js",
   "scripts": {

@@ -31,7 +31,7 @@ module.exports = function dabus(gulp, options) {
 
     // Program arguments
     program
-        .version("0.0.3")
+        .version("0.0.4")
         .usage("[task] [options]")
         .option("-e, --env [enviroment]", "Build enviroment (development,production) [development]", "development")
         .option("-m, --minify (0/1) [minify]", "Build minified css and minified/uglified js", parseInt, 0)
