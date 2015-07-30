@@ -1,6 +1,6 @@
 {
   "name": "dabus",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Dabus is a builder for gulp",
   "main": "index.js",
   "scripts": {
@@ -8,11 +8,28 @@
   },
   "keywords": [
     "gulp",
-    "build"
+    "build",
+    "browserify",
+    "jsx",
+    "es6",
+    "babelify",
+    "sass"
   ],
-  "repository": "git@github.com:Fjandin/dabus.git",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Fjandin/dabus.git"
+  },
   "readme": "README.md",
-  "author": "René Bischoff <rene.bischoff@gmail.com>",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/Fjandin/dabus/issues"
+  },
+  "author": {
+    "name": "René Bischoff",
+    "email": "rene.bischoff@gmail.com",
+    "url": "http://github.com/Fjandin"
+  },
+  "homepage": "https://github.com/Fjandin/dabus",
   "license": "MIT",
   "dependencies": {
     "autoprefixer-core": "^5.2.1",
