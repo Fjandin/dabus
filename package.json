@@ -19,7 +19,6 @@
     "type": "git",
     "url": "git@github.com:Fjandin/dabus.git"
   },
-  "readme": "README.md",
   "readmeFilename": "README.md",
   "bugs": {
     "url": "https://github.com/Fjandin/dabus/issues"
