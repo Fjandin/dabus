@@ -156,7 +156,16 @@ module.exports = function dabus(gulp, options) {
     .concat(options.js.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }))
     .concat(options.scss.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }));
     gulp.task("build", function(cb) {
-        runSequence.use(gulp)("build-clean", tasks, cb);
+        runSequence.use(gulp)("build-clean", tasks, function() {
+            cb();
+            if (typeof options.onBuildSuccess === "function") {
+                options.onBuildSuccess({
+                    minify: options.minify,
+                    sourcemaps: options.sourcemaps,
+                    environment: options.props.ENV
+                });
+            }
+        });
     });
 
     // BUILD ALL (WATCH MODE)
