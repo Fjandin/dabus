@@ -193,7 +193,8 @@ module.exports = function dabus(gulp, options) {
 
         // Watch scss
         options.scss.map(function(file) {
-            gulp.watch(file.src.split("/").slice(0, -1).join("/") + "/**/*.scss", {interval: 500}, [
+            var watchSrc = file.watch || file.src.split("/").slice(0, -1).join("/") + "/**/*.scss";
+            gulp.watch(watchSrc, {interval: 500}, [
                 "build-" + file.dest.split("/").join("-").replace(/\./g, "-"),
                 function() {
                     return gulp.src(path.join(options.buildDir, file.dest)).pipe(browserSync.reload({stream: true}));
