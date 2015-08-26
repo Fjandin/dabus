@@ -6,32 +6,36 @@ var dabus = require("dabus");
 // Build modules array from package.json
 var packageJson = require("./package.json");
 var modules = [];
-var moduleName;
-for (moduleName in packageJson.dependencies) {
+for (var moduleName in packageJson.dependencies) {
     if (packageJson.dependencies.hasOwnProperty(moduleName)) {
+        // Ignore font-awesome as it is not a js lib
+        if (moduleName === "font-awesome") {continue; }
         modules.push(moduleName);
     }
 }
 
-// Remove font-awesome as it is not a js lib
-var faIndex = modules.indexOf("font-awesome");
-if (faIndex > -1) {
-    modules.splice(modules.indexOf("font-awesome"), 1);
-}
-
 // Init dabus
 dabus(gulp, {
+    // Target build directory
     buildDir: "./build/",
+    // Path to directory that contains js (added to search path when using import/require)
     scriptsDir: "./app/scripts/",
-    scssDir: "./app/styles/",
-    babelify: true,
-    modules: modules,
-    modulesDest: "scripts/modules.js",
+    // Is this is defined a seperate file is built containing these modules
+    modules: {modules: modules, dest: "scripts/modules.js"},
+    // Process HTML files (see more below)
     html: [{src: "./app/index.html", dest: "index.html"}],
-    js: [{src: "./app/scripts/app.jsx", dest: "scripts/app.js"}],
-    scss: [{src: "./app/styles/app.scss", dest: "styles/app.css"}],
+    // Build JS(x) files
+    js: [{src: "./app/scripts/app.jsx", dest: "scripts/app.js", babelify: true}],
+    // Build sass
+    scss: [
+        {src: "./app/styles/app.scss", dest: "styles/app.css", watch: ["./app/styles/**/*.scss", "!./app/styles/font-awesome.scss"]},
+        {src: "./app/styles/font-awesome.scss", dest: "styles/font-awesome.css", watch: ["./app/styles/font-awesome.scss"]}
+    ],
+    // Images are minified before copied over
     images: [{src: "./app/images/**/*.{gif,png}", dest: "images"}],
+    // Static files are just copied over... nothing more, nothing less
     statics: [{src: "./node_modules/font-awesome/fonts/*", dest: "fonts"}],
+    // Callback when build is done
     onBuildSuccess: function(options) {
         console.log("Build done:", options);
     }

@@ -1,6 +1,6 @@
 {
   "name": "dabus",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "An automated gulp builder that uses browserify, babelify, watchify, sass etc...",
   "main": "index.js",
   "scripts": {

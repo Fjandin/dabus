@@ -19,10 +19,8 @@ module.exports = function dabus(gulp, options) {
     options = assign({
         buildDir: "./build/",
         scriptsDir: "./app/scripts/",
-        scssDir: "./app/styles/",
         babelify: true,
-        modules: [],
-        modulesDest: "scripts/modules.js",
+        modules: null,
         js: [],
         scss: [],
         html: [],
@@ -30,13 +28,18 @@ module.exports = function dabus(gulp, options) {
         statics: []
     }, options);
 
+    if (Array.isArray(options.modules)) {
+        options.modules = {modules: options.modules, dest: options.modulesDest};
+    }
+
     // Program arguments
     program
         .version(packageJson.version)
         .usage("[task] [options]")
-        .option("-e, --env [enviroment]", "Build enviroment (development,production) [development]", "development")
+        .option("-e, --environment [enviroment]", "Build enviroment (development,test,staging,production) [development]", "development")
         .option("-m, --minify (0/1) [minify]", "Build minified css and minified/uglified js", parseInt, 0)
         .option("-s --sourcemaps (0/1) [sourcemaps]", "Build with sourcemaps (js and css)", parseInt, 1)
+        .option("-p --prefix (0/1) [prefix]", "Prefix built js/css files with timestamp", parseInt, 0)
         .parse(process.argv);
 
     // Some auto values in props
@@ -45,28 +48,45 @@ module.exports = function dabus(gulp, options) {
     options.minify = !!program.minify;
     options.sourcemaps = !!program.sourcemaps;
     options.props.GIT = gitInfo(options.root);
-    options.props.ENV = program.env;
+    options.props.ENV = program.environment;
+    options.props.FILE_PREFIX = program.prefix ? (options.props.GIT.rev || Date.now()) + "." : "";
+
+    // DISABLE PREFIX IF SERVE
+    if (program.args[0] === "serve") {
+        options.props.FILE_PREFIX = "";
+    }
 
     // Create js build tasks
+    var JS_TASKS = [];
     options.js.forEach(function(file) {
+        var taskName = "build-" + file.dest.split("/").join("-").replace(/\./g, "-");
+        JS_TASKS.push(taskName);
+        if (options.props.FILE_PREFIX) {
+            file.dest = file.dest.split("/");
+            file.dest[file.dest.length - 1] = options.props.FILE_PREFIX + file.dest[file.dest.length - 1];
+            file.dest = file.dest.join("/");
+        }
         file.dest = path.join(file.dest);
         var jsOptions = {
             watch: false,
-            babelify: options.babelify,
+            babelify: file.babelify !== undefined ? file.babelify : options.babelify,
             minify: options.minify,
             sourcemaps: options.sourcemaps,
             buildDir: options.buildDir,
             scriptsDir: options.scriptsDir,
-            external: options.modules,
+            external: options.modules && options.modules.modules || [],
             props: options.props,
             file: file,
             root: options.root
         };
-        gulp.task("build-" + file.dest.split("/").join("-").replace(/\./g, "-"), jsTask(gulp, jsOptions));
+        gulp.task(taskName, jsTask(gulp, jsOptions));
     });
 
     // Create js build tasks (watchers)
+    var JS_WATCHIFY_TASKS = [];
     options.js.forEach(function(file) {
+        var taskName = "build-watch-" + file.dest.split("/").join("-").replace(/\./g, "-");
+        JS_WATCHIFY_TASKS.push(taskName);
         file.dest = path.join(file.dest);
         var jsOptions = {
             watch: true,
@@ -75,30 +95,47 @@ module.exports = function dabus(gulp, options) {
             sourcemaps: options.sourcemaps,
             buildDir: options.buildDir,
             scriptsDir: options.scriptsDir,
-            external: options.modules,
+            external: options.modules.modules,
             props: options.props,
             file: file,
             root: options.root
         };
-        gulp.task("build-watch-" + file.dest.split("/").join("-").replace(/\./g, "-"), jsTask(gulp, jsOptions));
+        gulp.task(taskName, jsTask(gulp, jsOptions));
     });
 
     // modules
-    options.modulesDest = path.join(options.modulesDest);
-    var libsOptions = {
-        watch: false,
-        minify: options.minify,
-        sourcemaps: options.sourcemaps,
-        buildDir: options.buildDir,
-        scriptsDir: options.scriptsDir,
-        require: options.modules,
-        file: {src: null, dest: options.modulesDest},
-        root: options.root
-    };
-    gulp.task("build-" + options.modulesDest.split("/").join("-").replace(/\./g, "-"), jsTask(gulp, libsOptions));
+    var JS_MODULES_TASK;
+    if (options.modules) {
+        JS_MODULES_TASK = "build-" + options.modules.dest.split("/").join("-").replace(/\./g, "-");
+        if (options.props.FILE_PREFIX) {
+            options.modules.dest = options.modules.dest.split("/");
+            options.modules.dest[options.modules.dest.length - 1] = options.props.FILE_PREFIX + options.modules.dest[options.modules.dest.length - 1];
+            options.modules.dest = options.modules.dest.join("/");
+        }
+        options.modules.dest = path.join(options.modules.dest);
+        var libsOptions = {
+            watch: false,
+            minify: options.minify,
+            sourcemaps: options.sourcemaps,
+            buildDir: options.buildDir,
+            scriptsDir: options.scriptsDir,
+            require: options.modules.modules,
+            file: {src: null, dest: options.modules.dest},
+            root: options.root
+        };
+        gulp.task(JS_MODULES_TASK, jsTask(gulp, libsOptions));
+    }
 
     // SCSS tasks
+    var SCSS_TASKS = [];
     options.scss.forEach(function(file) {
+        var taskName = "build-" + file.dest.split("/").join("-").replace(/\./g, "-");
+        SCSS_TASKS.push(taskName);
+        if (options.props.FILE_PREFIX) {
+            file.dest = file.dest.split("/");
+            file.dest[file.dest.length - 1] = options.props.FILE_PREFIX + file.dest[file.dest.length - 1];
+            file.dest = file.dest.join("/");
+        }
         file.dest = path.join(file.dest);
         var cssOptions = {
             watch: options.watch,
@@ -107,7 +144,7 @@ module.exports = function dabus(gulp, options) {
             buildDir: options.buildDir,
             file: file
         };
-        gulp.task("build-" + file.dest.split("/").join("-").replace(/\./g, "-"), scssTask(gulp, cssOptions));
+        gulp.task(taskName, scssTask(gulp, cssOptions));
     });
 
     // HTML
@@ -147,39 +184,29 @@ module.exports = function dabus(gulp, options) {
         return del([options.buildDir], cb);
     });
 
-    // BUILD ALL
-    var tasks = [
-        "build-" + options.modulesDest.split("/").join("-").replace(/\./g, "-")
-    ]
+    // TASK SEQUENCE
+    var tasks = (JS_MODULES_TASK ? [JS_MODULES_TASK] : [])
     .concat(options.statics.map(function(s) {return "build-static-" + s.dest.split("/").join("-"); }))
     .concat(options.images.map(function(s) {return "build-images-" + s.dest.split("/").join("-"); }))
     .concat(options.html.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }))
-    .concat(options.js.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }))
-    .concat(options.scss.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }));
+    .concat(SCSS_TASKS);
+
+    // BUILD ALL
+
     gulp.task("build", function(cb) {
-        runSequence.use(gulp)("build-clean", tasks, function() {
-            cb();
+        runSequence.use(gulp)("build-clean", tasks.concat(JS_TASKS), function() {
+            // Custom callback
             if (typeof options.onBuildSuccess === "function") {
-                options.onBuildSuccess({
-                    minify: options.minify,
-                    sourcemaps: options.sourcemaps,
-                    environment: options.props.ENV
-                });
+                options.onBuildSuccess(options);
             }
+            cb(null, options);
         });
     });
 
     // BUILD ALL (WATCH MODE)
-    var watchTasks = [
-        "build-" + options.modulesDest.split("/").join("-").replace(/\./g, "-")
-    ]
-    .concat(options.statics.map(function(s) {return "build-static-" + s.dest.split("/").join("-"); }))
-    .concat(options.images.map(function(s) {return "build-images-" + s.dest.split("/").join("-"); }))
-    .concat(options.html.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }))
-    .concat(options.js.map(function(file) {return "build-watch-" + file.dest.split("/").join("-").replace(/\./g, "-"); }))
-    .concat(options.scss.map(function(file) {return "build-" + file.dest.split("/").join("-").replace(/\./g, "-"); }));
+
     gulp.task("build-serve", function(cb) {
-        runSequence.use(gulp)("build-clean", watchTasks, cb);
+        runSequence.use(gulp)("build-clean", tasks.concat(JS_WATCHIFY_TASKS), cb);
     });
 
     // BUILD ALL AND SERVE AND WATCH
@@ -190,6 +217,9 @@ module.exports = function dabus(gulp, options) {
                 baseDir: options.buildDir
             }
         });
+
+        // Watch js
+        // This happens in the js-watch tasks with watchify
 
         // Watch scss
         options.scss.map(function(file) {
