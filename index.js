@@ -15,7 +15,7 @@ var imageTask = require("./lib/image.js");
 var staticTask = require("./lib/static.js");
 var packageJson = require("./package.json");
 
-module.exports = function dabus(gulp, options) {
+var dabus = function dabus(gulp, options) {
     options = assign({
         buildDir: "./build/",
         scriptsDir: "./app/scripts/",
@@ -241,3 +241,20 @@ module.exports = function dabus(gulp, options) {
         });
     });
 };
+
+dabus.readModulesFromPackage = function readModulesFromPackage(packagePath) {
+    console.log(__dirname);
+    packagePath = packagePath || "./package.json";
+    var packageContent = require("./package.json");
+    var modules = [];
+    for (var moduleName in packageContent.dependencies) {
+        if (packageJson.dependencies.hasOwnProperty(moduleName)) {
+            // Ignore font-awesome as it is not a js lib
+            if (moduleName === "font-awesome") {continue; }
+            modules.push(moduleName);
+        }
+    }
+    return modules;
+};
+
+module.exports = dabus;
