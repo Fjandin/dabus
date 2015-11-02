@@ -35,11 +35,11 @@ var dabus = function dabus(gulp, options) {
     // Program arguments
     program
         .version(packageJson.version)
-        .usage("[task] [options]")
+        .usage("(build / serve) [options]")
         .option("-e, --environment [enviroment]", "Build enviroment (development,test,staging,production) [development]", "development")
         .option("-m, --minify (0/1) [minify]", "Build minified css and minified/uglified js", parseInt, 0)
         .option("-s --sourcemaps (0/1) [sourcemaps]", "Build with sourcemaps (js and css)", parseInt, 1)
-        .option("-p --prefix (0/1) [prefix]", "Prefix built js/css files with timestamp", parseInt, 0)
+        .option("-p --prefix (0/1) [prefix]", "Prefix built js/css files with git revision or timestamp", parseInt, 0)
         .parse(process.argv);
 
     // Some auto values in props
